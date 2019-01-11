@@ -10,26 +10,11 @@
 
 package com.microstrategy.sample.kafka;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.apache.http.ParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.*;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
@@ -40,11 +25,15 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.apache.kafka.connect.sink.SinkRecord;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class MicroStrategy {
 
+	public static final String X_MSTR_AUTH_TOKEN = "X-MSTR-AuthToken";
+	public static final String X_MSTR_PROJECT_ID = "X-MSTR-ProjectID";
 	private String baseUrl;
 	private String username;
 	private String password;
@@ -64,8 +53,8 @@ public class MicroStrategy {
 	public static void main(String[] args) throws Exception {
 		
 		ArrayList<Header> headers1 = new ArrayList<Header>();
-		headers1.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json"));
-		headers1.add(new BasicHeader(HttpHeaders.ACCEPT, "application/json"));
+		headers1.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON));
+		headers1.add(new BasicHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON));
 		HttpPost request = new HttpPost("/auth/login");
 		request.setHeaders(headers1.toArray(new Header[headers1.size()]));
 		
@@ -106,8 +95,8 @@ public class MicroStrategy {
 		httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore).build();
 
 		this.headers = new ArrayList<Header>();
-		this.headers.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json"));
-		this.headers.add(new BasicHeader(HttpHeaders.ACCEPT, "application/json"));
+		this.headers.add(new BasicHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON));
+		this.headers.add(new BasicHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON));
 		
 		mapper = new ObjectMapper();
 	}
@@ -122,7 +111,7 @@ public class MicroStrategy {
 			request.setHeaders(this.headers.toArray(new Header[this.headers.size()]));
 			CloseableHttpResponse response = httpClient.execute(request, httpContext);
 			if (response.getStatusLine().getStatusCode() == HttpStatus.SC_NO_CONTENT) {
-				this.authToken = response.getFirstHeader("X-MSTR-AuthToken");
+				this.authToken = response.getFirstHeader(X_MSTR_AUTH_TOKEN);
 				this.headers.add(this.authToken);
 			} else {
 				throw new MicroStrategyException(response.getStatusLine().toString());
@@ -134,7 +123,7 @@ public class MicroStrategy {
 	
 	public void disconnect () throws MicroStrategyException {
 		Map<String, String> payload = new Hashtable<String, String>();
-		payload.put("X-MSTR-AuthToken", this.authToken.getValue());
+		payload.put(X_MSTR_AUTH_TOKEN, this.authToken.getValue());
 		try {
 			HttpPost request = new HttpPost(baseUrl + "/auth/logout");
 			request.setEntity(new StringEntity(mapper.writeValueAsString(payload)));
@@ -169,7 +158,7 @@ public class MicroStrategy {
 				for (Map<String, Object> project : json) {
 					if (projectName.equals(project.get("name"))) {
 						projectId = (String) project.get("id");
-						this.headers.add(new BasicHeader("X-MSTR-ProjectID", projectId));
+						this.headers.add(new BasicHeader(X_MSTR_PROJECT_ID, projectId));
 						return;
 					}
 				}
@@ -246,7 +235,7 @@ public class MicroStrategy {
 
 	private void printResponse(CloseableHttpResponse response) throws ParseException, IOException {
 		HttpEntity entity = response.getEntity();
-		System.out.println(EntityUtils.toString(entity, "utf-8"));
+		System.out.println(EntityUtils.toString(entity, StandardCharsets.UTF_8));
 	}
 
 }
