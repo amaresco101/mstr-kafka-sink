@@ -10,6 +10,7 @@ Configuring the connector requires at least the following information:
 * MicroStrategy username
 * MicroStrategy password
 * MicroStrategy Project Name
+* Cube update policy for new data (Add, Update, Upsert, Replace)
 
 This connector only supports pushing a JSON topic to a MicroStrategy Cube. Other formats (TXT, CSV, etc.) need to be transformed in Kafka prior to be pushed to MicroStrategy. [KSQL](https://www.confluent.io/product/ksql/) can help you do this
 
