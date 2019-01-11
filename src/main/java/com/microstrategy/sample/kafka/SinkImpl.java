@@ -60,12 +60,14 @@ public class SinkImpl extends SinkTask {
 		for (SinkRecord record : records) {
 			// buffer.put(record.key(), (Map<String, Object>) record.value());
 			Map<String, Object> value = (Map<String, Object>) record.value();
-			for (Entry<String, Object> entry : value.entrySet()) {
-				if (entry.getValue().getClass().equals(Long.class)) {
-					entry.setValue(entry.getValue().toString());
+			if (value != null) {
+				for (Entry<String, Object> entry : value.entrySet()) {
+					if (entry.getValue().getClass().equals(Long.class)) {
+						entry.setValue(entry.getValue().toString());
+					}
 				}
+				buffer.add(value);
 			}
-			buffer.add(value);
 		}
 		if (buffer.size() > 5000) {
 			System.out.println("Requesting early commit due to data volume...");
@@ -123,7 +125,7 @@ public class SinkImpl extends SinkTask {
 				tableDefinition.put("data", new String(Base64.getEncoder().encode(array), Charset.forName("utf-8")));
 
 				MicroStrategy mstr = new MicroStrategy(props.get(MicroStrategySink.CONFIG_LIBRARY_URL),
-						props.get(MicroStrategySink.CONFIG_USER), props.get(MicroStrategySink.CONFIG_PASSWORD));
+						props.get(MicroStrategySink.CONFIG_USER), props.get(MicroStrategySink.CONFIG_PASSWORD), props.get(MicroStrategySink.CONFIG_LOGINMODE));
 				mstr.connect();
 				mstr.setProject(props.get(MicroStrategySink.CONFIG_PROJECT));
 				mstr.setTarget(props.get(MicroStrategySink.CONFIG_CUBE), tableName, new String("D3C7D461F69C4610AA6BAA5EF51F4125"));

@@ -26,6 +26,7 @@ public class MicroStrategySink extends SinkConnector {
 	static final String CONFIG_LIBRARY_URL = "CONFIG_LIBRARY_URL";
 	static final String CONFIG_USER = "CONFIG_USER";
 	static final String CONFIG_PASSWORD = "CONFIG_PASSWORD";
+	static final String CONFIG_LOGINMODE = "CONFIG_LOGINMODE";
 	static final String CONFIG_PROJECT = "CONFIG_PROJECT";
 	static final String CONFIG_CUBE = "CONFIG_CUBE";
 	static final String CONFIG_FOLDER = "CONFIG_FOLDER";
@@ -71,6 +72,17 @@ public class MicroStrategySink extends SinkConnector {
 				++groupOrder,
 				Width.SHORT,
 				"User password");
+		config.define(
+				CONFIG_LOGINMODE,
+				Type.STRING,
+				null,
+				new NonEmptyString(),
+				Importance.HIGH,
+				"Login mode.",
+				"MicroStrategy",
+				++groupOrder,
+				Width.SHORT,
+				"Login mode");
 		config.define(
 				CONFIG_PROJECT,
 				Type.STRING,

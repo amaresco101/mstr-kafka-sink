@@ -48,6 +48,7 @@ public class MicroStrategy {
 	private String baseUrl;
 	private String username;
 	private String password;
+	private String loginMode;
 	private CookieStore cookieStore;
 	private CloseableHttpClient httpClient;
 	private HttpClientContext httpContext;
@@ -78,8 +79,9 @@ public class MicroStrategy {
 		String libraryUrl = "https://xxx.microstrategy.com/MicroStrategyLibrary";
 		String username = "usename";
 		String password = "password";
+		String loginMode = "1";
 
-		MicroStrategy mstr = new MicroStrategy(libraryUrl, username, password);
+		MicroStrategy mstr = new MicroStrategy(libraryUrl, username, password, loginMode);
 		mstr.connect();
 
 		mstr.setProject("MicroStrategy Tutorial");
@@ -95,10 +97,11 @@ public class MicroStrategy {
 		}
 	}
 
-	public MicroStrategy(String libraryUrl, String username, String password) {
+	public MicroStrategy(String libraryUrl, String username, String password, String loginMode) {
 		this.baseUrl = libraryUrl + "/api";
 		this.username = username;
 		this.password = password;
+		this.loginMode = loginMode;
 
 		CookieStore cookieStore = new BasicCookieStore();
 		httpContext = HttpClientContext.create();
@@ -116,6 +119,8 @@ public class MicroStrategy {
 		Map<String, String> payload = new Hashtable<String, String>();
 		payload.put("username", username);
 		payload.put("password", password);
+		payload.put("loginMode", loginMode);
+
 		try {
 			HttpPost request = new HttpPost(baseUrl + "/auth/login");
 			request.setEntity(new StringEntity(mapper.writeValueAsString(payload)));
